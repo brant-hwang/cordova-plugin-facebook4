@@ -403,8 +403,6 @@
     NSString *url = options[@"url"];
     NSString *picture = options[@"picture"];
     CDVPluginResult *result;
-    self.dialogCallbackId = command.callbackId;
-
     FBSDKAppInviteContent *content = [[FBSDKAppInviteContent alloc] init];
 
     if (url) {
@@ -413,55 +411,15 @@
     if (picture) {
         content.appInvitePreviewImageURL = [NSURL URLWithString:picture];
     }
-
     FBSDKAppInviteDialog *dialog = [[FBSDKAppInviteDialog alloc] init];
+    dialog.content = content;
     if ((url || picture) && [dialog canShow]) {
-
-        [FBSDKAppInviteDialog showWithContent:content
-                                     delegate:self];
-
+        [dialog show];
+        result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     } else {
         result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR];
-        [self.commandDelegate sendPluginResult:result callbackId:self.dialogCallbackId];
     }
-
-}
-
-// add these methods in if you extend your sharing view controller with <FBSDKAppInviteDialogDelegate>
-- (void)appInviteDialog:(FBSDKAppInviteDialog *)appInviteDialog
- didCompleteWithResults:(NSDictionary *)results {
-
-    if (!self.dialogCallbackId) {
-        return;
-    }
-
-    NSLog(@"app invite dialog did complete");
-    NSLog(@"result::%@",results);
-
-    CDVPluginResult *pluginResult;
-    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
-                                 messageAsDictionary:results];
-    [self.commandDelegate sendPluginResult:pluginResult callbackId:self.dialogCallbackId];
-    self.dialogCallbackId = nil;
-
-}
-
-- (void)appInviteDialog:(FBSDKAppInviteDialog *)appInviteDialog
-       didFailWithError:(NSError *)error {
-
-    if (!self.dialogCallbackId) {
-        return;
-    }
-
-    NSLog(@"app invite dialog did fail");
-    NSLog(@"error::%@",error);
-
-    CDVPluginResult *pluginResult;
-    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
-                                     messageAsString:[NSString stringWithFormat:@"Error: %@", error.description]];
-    [self.commandDelegate sendPluginResult:pluginResult callbackId:self.dialogCallbackId];
-    self.dialogCallbackId = nil;
-    
+    [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
 }
 
 #pragma mark - Utility methods
@@ -520,12 +478,12 @@
 
     response[@"status"] = @"connected";
     response[@"authResponse"] = @{
-                                  @"accessToken" : token.tokenString ? token.tokenString : @"",
+                                  @"accessToken" : token.tokenString,
                                   @"expiresIn" : expiresIn,
                                   @"secret" : @"...",
                                   @"session_key" : [NSNumber numberWithBool:YES],
                                   @"sig" : @"...",
-                                  @"userID" : token.userID ? token.userID : @""
+                                  @"userID" : token.userID
                                   };
 
 
