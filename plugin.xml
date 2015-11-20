@@ -52,6 +52,11 @@
               android:theme="@android:style/Theme.Translucent.NoTitleBar"
               android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"
               android:label="@string/fb_app_name" />
+            <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+        </config-file>
+
+        <config-file target="AndroidManifest.xml" parent="/*">
+
         </config-file>
 
         <framework src="com.facebook.android:facebook-android-sdk:4.3.0"/>
